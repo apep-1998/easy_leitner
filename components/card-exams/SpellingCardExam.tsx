@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity, Alert } from "react-native";
+import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedTextInput } from "../themed-text-input";
-import { Card } from "@/types";
+import { Card, SpellingCardConfig } from "@/types";
 import { useAudioPlayer } from "expo-audio";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
-import { SpellingCardConfig } from "@/types";
 interface SpellingCardExamProps {
   card: Card;
   onCorrect: () => void;

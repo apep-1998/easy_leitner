@@ -1,12 +1,11 @@
-import { useThemeColor } from '@/hooks/use-theme-color';
-import RNPickerSelect, { PickerSelectProps } from 'react-native-picker-select';
-import { StyleSheet } from 'react-native';
-import { ThemedText } from './themed-text';
+import { useThemeColor } from "@/hooks/use-theme-color";
+import RNPickerSelect, { PickerSelectProps } from "react-native-picker-select";
+import { StyleSheet } from "react-native";
 
 export function ThemedPicker(props: PickerSelectProps) {
-  const color = useThemeColor({}, 'text');
-  const borderColor = useThemeColor({}, 'border');
-  const placeholderColor = useThemeColor({}, 'icon');
+  const color = useThemeColor({}, "text");
+  const borderColor = useThemeColor({}, "border");
+  const placeholderColor = useThemeColor({}, "icon");
 
   const pickerSelectStyles = StyleSheet.create({
     inputIOS: {
@@ -40,8 +39,12 @@ export function ThemedPicker(props: PickerSelectProps) {
     <RNPickerSelect
       {...props}
       style={pickerSelectStyles}
-      placeholder={props.placeholder ? { ...props.placeholder, color: placeholderColor } : undefined}
-      darkTheme={useThemeColor({}, 'background') === 'dark'}
+      placeholder={
+        props.placeholder
+          ? { ...props.placeholder, color: placeholderColor }
+          : undefined
+      }
+      darkTheme={useThemeColor({}, "background") === "dark"}
     />
   );
 }

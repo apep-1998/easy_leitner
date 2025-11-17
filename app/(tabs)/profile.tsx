@@ -1,11 +1,10 @@
 import { useEffect, useState } from "react";
 import { StyleSheet, TouchableHighlight, Image } from "react-native";
 
-import { HelloWave } from "@/components/hello-wave";
 import SafeScrollView from "@/components/safe-scroll-view";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { Link, useRouter } from "expo-router";
+import { useRouter } from "expo-router";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import Entypo from "@expo/vector-icons/Entypo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
