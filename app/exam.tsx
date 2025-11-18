@@ -1,12 +1,13 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet, Alert } from "react-native";
-import { useLocalSearchParams, useRouter } from "expo-router";
+import { StyleSheet } from "react-native";
+import { useLocalSearchParams, Link } from "expo-router";
 import { Card } from "@/types";
 import StandardCardExam from "@/components/card-exams/StandardCardExam";
 import SpellingCardExam from "@/components/card-exams/SpellingCardExam";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { onReadyCardsSnapshot, setCardNextLevel } from "@/firebase/card";
+import SafeScrollView from "@/components/safe-scroll-view";
 
 const MAPPE_LEVEL_TO_HOURS: Record<number, number> = {
   0: 0,
@@ -22,9 +23,7 @@ const MAPPE_LEVEL_TO_HOURS: Record<number, number> = {
 const ExamScreen = () => {
   const { boxId } = useLocalSearchParams();
   const [cards, setCards] = useState<Card[]>([]);
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [currentCard, setCurrentCard] = useState<Card | null>(null);
-  const router = useRouter();
 
   useEffect(() => {
     if (typeof boxId === "string") {
@@ -36,19 +35,10 @@ const ExamScreen = () => {
   useEffect(() => {
     if (cards.length > 0) {
       setCurrentCard(cards[0]);
+    } else {
+      setCurrentCard(null);
     }
   }, [cards]);
-
-  const handleNextCard = () => {
-    if (currentCardIndex < cards.length - 1) {
-      setCurrentCardIndex(currentCardIndex + 1);
-      setCurrentCard(cards[currentCardIndex + 1]);
-    } else {
-      Alert.alert("Congratulations!", "You have finished all the cards.", [
-        { text: "OK", onPress: () => router.back() },
-      ]);
-    }
-  };
 
   const handleCorrect = () => {
     if (currentCard?.id) {
@@ -62,26 +52,26 @@ const ExamScreen = () => {
       );
       setCardNextLevel(currentCard.id, level, nextReviewDate, true);
     }
-    handleNextCard();
   };
 
   const handleIncorrect = () => {
     if (currentCard?.id) {
       setCardNextLevel(currentCard.id, 0, new Date(), false);
     }
-    handleNextCard();
   };
 
-  if (cards.length === 0) {
-    return (
-      <ThemedView style={styles.container}>
-        <ThemedText>No cards ready for review in this box.</ThemedText>
-      </ThemedView>
-    );
-  }
-
   return (
-    <View style={styles.container}>
+    <SafeScrollView style={styles.container}>
+      {cards.length === 0 && (
+        <ThemedView
+          style={{ flex: 1, justifyContent: "center", alignItems: "center" }}
+        >
+          <ThemedText>No cards ready for review in this box.</ThemedText>
+          <Link href="/(tabs)/boxes">
+            <ThemedText type="link">Go to Box</ThemedText>
+          </Link>
+        </ThemedView>
+      )}
       {currentCard?.config.type === "standard" && (
         <StandardCardExam
           card={currentCard}
@@ -96,15 +86,13 @@ const ExamScreen = () => {
           onIncorrect={handleIncorrect}
         />
       )}
-    </View>
+    </SafeScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
   },
 });
 
