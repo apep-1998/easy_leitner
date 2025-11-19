@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { View, StyleSheet, TouchableOpacity } from "react-native";
 import { ThemedText } from "@/components/themed-text";
-import { Card, StandardCardConfig } from "@/types";
+import { Card, WordStandardCardConfig } from "@/types";
 import { setCardNextLevel } from "@/firebase/card";
 import FeedbackOverlay from "../feedback-overlay";
+import { useAudioPlayer } from "expo-audio";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
 
 const MAPPE_LEVEL_TO_HOURS: Record<number, number> = {
   0: 0,
@@ -16,12 +18,15 @@ const MAPPE_LEVEL_TO_HOURS: Record<number, number> = {
   7: 1000000000,
 };
 
-interface StandardCardExamProps {
+interface WordStandardCardExamProps {
   card: Card;
 }
 
-const StandardCardExam: React.FC<StandardCardExamProps> = ({ card }) => {
-  const config = card.config as StandardCardConfig;
+const WordStandardCardExam: React.FC<WordStandardCardExamProps> = ({
+  card,
+}) => {
+  const config = card.config as WordStandardCardConfig;
+  const player = useAudioPlayer(config.pronunciation_file);
   const [showAnswer, setShowAnswer] = useState(false);
   const [isCorrecting, setIsCorrecting] = useState<boolean | null>(null);
   const [isIncorrectReview, setIsIncorrectReview] = useState(false);
@@ -31,6 +36,10 @@ const StandardCardExam: React.FC<StandardCardExamProps> = ({ card }) => {
     setIsCorrecting(null);
     setIsIncorrectReview(false);
   }, [card]);
+
+  useEffect(() => {
+    player.play();
+  }, [player]);
 
   const handleCorrect = () => {
     setIsCorrecting(true);
@@ -59,7 +68,24 @@ const StandardCardExam: React.FC<StandardCardExamProps> = ({ card }) => {
 
   return (
     <View style={styles.container}>
-      <ThemedText style={styles.question}>{config.front}</ThemedText>
+      <ThemedText style={styles.question}>{config.word}</ThemedText>
+      <ThemedText style={styles.partOfSpeech}>
+        {config.part_of_speech}
+      </ThemedText>
+      <TouchableOpacity
+        onPress={() => {
+          player.seekTo(0);
+          player.play();
+        }}
+        disabled={player.playing}
+      >
+        <FontAwesome
+          name={player.playing ? "volume-up" : "volume-down"}
+          size={50}
+          color="#007AFF"
+        />
+      </TouchableOpacity>
+
       {showAnswer ? (
         <ThemedText style={styles.answer}>{config.back}</ThemedText>
       ) : (
@@ -116,6 +142,12 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
+  partOfSpeech: {
+    fontSize: 18,
+    fontStyle: "italic",
+    marginBottom: 20,
+    textAlign: "center",
+  },
   answer: {
     fontSize: 20,
     marginBottom: 20,
@@ -156,4 +188,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default StandardCardExam;
+export default WordStandardCardExam;

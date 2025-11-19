@@ -12,9 +12,18 @@ export const SpellingCardConfigSchema = z.object({
   spelling: z.string(),
 });
 
+export const WordStandardCardConfigSchema = z.object({
+  type: z.literal("word-standard"),
+  word: z.string(),
+  part_of_speech: z.string(),
+  pronunciation_file: z.string().url(),
+  back: z.string(),
+});
+
 export const CardConfigSchema = z.union([
   StandardCardConfigSchema,
   SpellingCardConfigSchema,
+  WordStandardCardConfigSchema,
 ]);
 
 export const BoxSchema = z.object({
@@ -27,7 +36,11 @@ export const BoxSchema = z.object({
 
 export const CardSchema = z.object({
   id: z.string().optional(),
-  config: z.union([StandardCardConfigSchema, SpellingCardConfigSchema]),
+  config: z.union([
+    StandardCardConfigSchema,
+    SpellingCardConfigSchema,
+    WordStandardCardConfigSchema,
+  ]),
   boxId: z.string(),
   userId: z.string(),
   finished: z.boolean().default(false),
@@ -42,3 +55,6 @@ export type Card = z.infer<typeof CardSchema>;
 export type CardConfig = z.infer<typeof CardConfigSchema>;
 export type SpellingCardConfig = z.infer<typeof SpellingCardConfigSchema>;
 export type StandardCardConfig = z.infer<typeof StandardCardConfigSchema>;
+export type WordStandardCardConfig = z.infer<
+  typeof WordStandardCardConfigSchema
+>;

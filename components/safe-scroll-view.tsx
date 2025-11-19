@@ -6,9 +6,10 @@ export default function SafeScrollView({
 }: React.ComponentProps<typeof ScrollView>) {
   return (
     <ScrollView
+      style={{ flex: 1, height: "100%", width: "100%" }}
       contentContainerStyle={{
-        flex: 1,
         paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+        paddingBottom: 60,
       }}
       {...props}
     >

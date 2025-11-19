@@ -3,22 +3,12 @@ import { StyleSheet } from "react-native";
 import { useLocalSearchParams, Link } from "expo-router";
 import { Card } from "@/types";
 import StandardCardExam from "@/components/card-exams/StandardCardExam";
+import WordStandardCardExam from "@/components/card-exams/WordStandardCardExam";
 import SpellingCardExam from "@/components/card-exams/SpellingCardExam";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
-import { onReadyCardsSnapshot, setCardNextLevel } from "@/firebase/card";
+import { onReadyCardsSnapshot } from "@/firebase/card";
 import SafeScrollView from "@/components/safe-scroll-view";
-
-const MAPPE_LEVEL_TO_HOURS: Record<number, number> = {
-  0: 0,
-  1: 4,
-  2: 24,
-  3: 48,
-  4: 96,
-  5: 192,
-  6: 384,
-  7: 1000000000,
-};
 
 const ExamScreen = () => {
   const { boxId } = useLocalSearchParams();
@@ -40,26 +30,6 @@ const ExamScreen = () => {
     }
   }, [cards]);
 
-  const handleCorrect = () => {
-    if (currentCard?.id) {
-      const level = currentCard.level + 1;
-      if (level > 7) {
-        return;
-      }
-      const nextReviewDate = new Date();
-      nextReviewDate.setHours(
-        nextReviewDate.getHours() + MAPPE_LEVEL_TO_HOURS[level],
-      );
-      setCardNextLevel(currentCard.id, level, nextReviewDate, true);
-    }
-  };
-
-  const handleIncorrect = () => {
-    if (currentCard?.id) {
-      setCardNextLevel(currentCard.id, 0, new Date(), false);
-    }
-  };
-
   return (
     <SafeScrollView style={styles.container}>
       {cards.length === 0 && (
@@ -73,18 +43,13 @@ const ExamScreen = () => {
         </ThemedView>
       )}
       {currentCard?.config.type === "standard" && (
-        <StandardCardExam
-          card={currentCard}
-          onCorrect={handleCorrect}
-          onIncorrect={handleIncorrect}
-        />
+        <StandardCardExam card={currentCard} />
       )}
       {currentCard?.config.type === "spelling" && (
-        <SpellingCardExam
-          card={currentCard}
-          onCorrect={handleCorrect}
-          onIncorrect={handleIncorrect}
-        />
+        <SpellingCardExam card={currentCard} />
+      )}
+      {currentCard?.config.type === "word-standard" && (
+        <WordStandardCardExam card={currentCard} />
       )}
     </SafeScrollView>
   );

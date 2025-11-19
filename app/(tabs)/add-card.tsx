@@ -6,12 +6,13 @@ import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import StandardCardForm from "@/components/card-forms/StandardCardForm";
 import SpellingCardForm from "@/components/card-forms/SpellingCardForm";
+import WordStandardCardForm from "@/components/card-forms/WordStandardCardForm";
 import { Box } from "@/types";
 import { ThemedPicker } from "@/components/themed-picker";
 import { onBoxesSnapshot } from "@/firebase/box";
 import { addCard as addCardToFirebase } from "@/firebase/card";
 
-type CardType = "standard" | "spelling";
+type CardType = "standard" | "spelling" | "word-standard";
 
 export default function AddCardScreen() {
   const [cardType, setCardType] = useState<CardType>("standard");
@@ -47,6 +48,37 @@ export default function AddCardScreen() {
     value: box.id,
   }));
 
+  const renderCardForm = () => {
+    switch (cardType) {
+      case "standard":
+        return (
+          <StandardCardForm
+            key={formKey}
+            onChange={setCardData}
+            setIsReadyToSubmit={setIsReadyToSubmit}
+          />
+        );
+      case "spelling":
+        return (
+          <SpellingCardForm
+            key={formKey}
+            onChange={setCardData}
+            setIsReadyToSubmit={setIsReadyToSubmit}
+          />
+        );
+      case "word-standard":
+        return (
+          <WordStandardCardForm
+            key={formKey}
+            onChange={setCardData}
+            setIsReadyToSubmit={setIsReadyToSubmit}
+          />
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <SafeScrollView>
       <ThemedView style={styles.container}>
@@ -57,6 +89,7 @@ export default function AddCardScreen() {
           items={[
             { label: "Standard", value: "standard" },
             { label: "Spelling", value: "spelling" },
+            { label: "Word Standard", value: "word-standard" },
           ]}
           value={cardType}
         />
@@ -68,19 +101,7 @@ export default function AddCardScreen() {
           value={selectedBox}
         />
 
-        {cardType === "standard" ? (
-          <StandardCardForm
-            key={formKey}
-            onChange={setCardData}
-            setIsReadyToSubmit={setIsReadyToSubmit}
-          />
-        ) : (
-          <SpellingCardForm
-            key={formKey}
-            onChange={setCardData}
-            setIsReadyToSubmit={setIsReadyToSubmit}
-          />
-        )}
+        {renderCardForm()}
 
         <TouchableOpacity
           onPress={handleAddCard}

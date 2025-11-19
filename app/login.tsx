@@ -43,7 +43,11 @@ export default function LoginScreen() {
   };
 
   return (
-    <SafeScrollView>
+    <SafeScrollView
+      contentContainerStyle={{
+        flex: 1,
+      }}
+    >
       <ThemedView
         style={{
           justifyContent: "center",

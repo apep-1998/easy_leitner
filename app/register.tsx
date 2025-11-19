@@ -32,7 +32,11 @@ export default function RegisterScreen() {
   };
 
   return (
-    <SafeScrollView>
+    <SafeScrollView
+      contentContainerStyle={{
+        flex: 1,
+      }}
+    >
       <ThemedView
         style={{
           justifyContent: "center",
