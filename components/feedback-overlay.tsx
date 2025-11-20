@@ -1,28 +1,42 @@
-import React from "react";
-import { View, StyleSheet, Modal } from "react-native";
+import React, { useEffect } from "react";
+import { View, StyleSheet, Modal, Text } from "react-native";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { ThemedText } from "./themed-text";
 
 interface FeedbackOverlayProps {
-  isCorrect: boolean;
-  onDone: () => void;
+  message: string;
+  onDismiss: () => void;
 }
 
 const FeedbackOverlay: React.FC<FeedbackOverlayProps> = ({
-  isCorrect,
-  onDone,
+  message,
+  onDismiss,
 }) => {
-  if (!isCorrect) {
+  useEffect(() => {
+    if (message) {
+      const timer = setTimeout(() => {
+        onDismiss();
+      }, 2000); // Automatically dismiss after 2 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [message, onDismiss]);
+
+  if (!message) {
     return null;
   }
+
   return (
     <Modal transparent visible>
       <View style={styles.overlay}>
-        <FontAwesome
-          name="check-circle"
-          size={100}
-          color="green"
-          backgroundColor="rgba(0, 0, 0, 1)"
-        />
+        <View style={styles.content}>
+          <FontAwesome
+            name="check-circle"
+            size={100}
+            color="green"
+            backgroundColor="rgba(0, 0, 0, 1)"
+          />
+          <ThemedText>{message}</ThemedText>
+        </View>
       </View>
     </Modal>
   );
@@ -35,6 +49,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
+  content: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+  }
 });
 
 export default FeedbackOverlay;

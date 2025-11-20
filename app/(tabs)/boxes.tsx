@@ -32,9 +32,8 @@ const BoxItem = (box: Box) => {
     if (box.id) {
       const unsubscribe = onCardsSnapshotInBox(box.id, (cards) => {
         setNumberOfReadyCards(
-          cards.filter(
-            (card) => card.nextReviewTime.toDate() <= new Date()
-          ).length
+          cards.filter((card) => card.nextReviewTime.toDate() <= new Date())
+            .length,
         );
         setNumberOfCards(cards.length);
       });
@@ -80,50 +79,61 @@ const BoxItem = (box: Box) => {
 
   return (
     <ThemedView style={styles.boxContainer}>
-      <ThemedView>
+      <ThemedView
+        style={{
+          flexDirection: "column",
+          alignItems: "center",
+          marginBottom: 24,
+        }}
+      >
         <ThemedText type="title">{box.name}</ThemedText>
-        <ThemedView style={{ flexDirection: "row", paddingTop: 10 }}>
+        <ThemedView
+          style={{
+            flexDirection: "row",
+            marginLeft: 10,
+            marginTop: 10,
+          }}
+        >
           <ThemedView
             style={{
-              flexDirection: "column",
+              flexDirection: "row",
               alignItems: "center",
-              marginRight: 10,
             }}
           >
             <MaterialCommunityIcons
+              style={{ marginRight: 5 }}
               name="cards-outline"
-              size={16}
+              size={20}
               color="white"
             />
-            <ThemedText type="small">{numberOfCards}</ThemedText>
-            <ThemedText type="small">Total</ThemedText>
+            <ThemedText type="small">{numberOfCards} Total</ThemedText>
           </ThemedView>
           <ThemedView
             style={{
-              flexDirection: "column",
+              flexDirection: "row",
               alignItems: "center",
-              marginRight: 10,
+              marginLeft: 10,
             }}
           >
             <MaterialCommunityIcons
+              style={{ marginRight: 5 }}
               name="cards-outline"
-              size={16}
+              size={20}
               color="white"
             />
-            <ThemedText type="small">{numberOfReadyCards}</ThemedText>
-            <ThemedText type="small">Ready</ThemedText>
+            <ThemedText type="small">{numberOfReadyCards} Ready</ThemedText>
           </ThemedView>
         </ThemedView>
       </ThemedView>
       <ThemedView style={styles.boxActionContainer}>
         <TouchableOpacity onPress={handleDeleteBox}>
-          <FontAwesome name="trash" size={30} color="red" />
+          <FontAwesome name="trash" size={35} color="red" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleShowCards}>
-          <FontAwesome name="list" size={30} color={"#2196F3"} />
+          <FontAwesome name="list" size={35} color={"#2196F3"} />
         </TouchableOpacity>
         <TouchableOpacity onPress={goToExam}>
-          <FontAwesome name="play" size={30} color={"green"} />
+          <FontAwesome name="play" size={35} color={"green"} />
         </TouchableOpacity>
       </ThemedView>
     </ThemedView>
@@ -230,7 +240,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   boxContainer: {
     flex: 1,
-    flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 16,
     marginLeft: 10,

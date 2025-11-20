@@ -8,7 +8,7 @@ export default function SafeScrollView({
     <ScrollView
       style={{ flex: 1, height: "100%", width: "100%" }}
       contentContainerStyle={{
-        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+        paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 10,
         paddingBottom: 60,
       }}
       {...props}

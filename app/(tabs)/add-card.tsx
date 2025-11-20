@@ -13,7 +13,11 @@ import { ThemedPicker } from "@/components/themed-picker";
 import { onBoxesSnapshot } from "@/firebase/box";
 import { addCard as addCardToFirebase } from "@/firebase/card";
 
-type CardType = "standard" | "spelling" | "word-standard" | "german-verb-conjugator";
+type CardType =
+  | "standard"
+  | "spelling"
+  | "word-standard"
+  | "german-verb-conjugator";
 
 export default function AddCardScreen() {
   const [cardType, setCardType] = useState<CardType>("standard");
@@ -91,7 +95,9 @@ export default function AddCardScreen() {
   return (
     <SafeScrollView>
       <ThemedView style={styles.container}>
-        <ThemedText type="title">Add New Card</ThemedText>
+        <ThemedText type="title" style={{ marginBottom: 16 }}>
+          Add New Card
+        </ThemedText>
 
         <ThemedPicker
           onValueChange={(value) => setCardType(value)}
@@ -99,7 +105,10 @@ export default function AddCardScreen() {
             { label: "Standard", value: "standard" },
             { label: "Spelling", value: "spelling" },
             { label: "Word Standard", value: "word-standard" },
-            { label: "German Verb Conjugator", value: "german-verb-conjugator" },
+            {
+              label: "German Verb Conjugator",
+              value: "german-verb-conjugator",
+            },
           ]}
           value={cardType}
         />
