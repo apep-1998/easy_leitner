@@ -7,17 +7,22 @@ import { StyleSheet } from "react-native";
 export default function StandardCardForm({
   onChange,
   setIsReadyToSubmit,
+  initialData,
 }: {
   onChange: (data: any) => void;
   setIsReadyToSubmit: (isReady: boolean) => void;
+  initialData?: {
+    front?: string;
+    back?: string;
+  };
 }) {
-  const [front, setFront] = useState("");
-  const [back, setBack] = useState("");
+  const [front, setFront] = useState(initialData?.front || "");
+  const [back, setBack] = useState(initialData?.back || "");
 
   useEffect(() => {
     onChange({ front, back });
     setIsReadyToSubmit(front.trim() !== "" && back.trim() !== "");
-  }, [front, back]);
+  }, [front, back, onChange, setIsReadyToSubmit]);
 
   return (
     <ThemedView>

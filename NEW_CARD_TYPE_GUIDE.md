@@ -52,7 +52,7 @@ export type WordStandardCardConfig = z.infer<
 
 ## 2. Create a New Form Component
 
-Next, create a new React component for the card's creation form under `components/card-forms/`. The component should take `onChange` and `setIsReadyToSubmit` as props.
+Next, create a new React component for the card's creation and editing form under `components/card-forms/`. The component should take `onChange`, `setIsReadyToSubmit`, and an optional `initialData` as props. The `initialData` prop is used to pre-fill the form when editing an existing card.
 
 **Example:**
 
@@ -61,29 +61,29 @@ Create a new file `components/card-forms/WordStandardCardForm.tsx`:
 ```typescript
 import { ThemedText } from "@/components/themed-text";
 import { ThemedTextInput } from "@/components/themed-text-input";
-import { ThemedView } from "@/components/themed-view";
-import { useEffect, useState } from "react";
-import { StyleSheet, TouchableOpacity, Alert } from "react-native";
-import {
-  useAudioRecorder,
-  requestRecordingPermissionsAsync,
-  RecordingPresets,
-} from "expo-audio";
-import { uploadAudio as uploadAudioToFirebase } from "@/firebase/storage";
+// ... other imports
 
 export default function WordStandardCardForm({
   onChange,
   setIsReadyToSubmit,
+  initialData, // For editing
 }: {
   onChange: (data: any) => void;
   setIsReadyToSubmit: (isReady: boolean) => void;
+  // Add initialData to the props
+  initialData?: {
+    word?: string;
+    part_of_speech?: string;
+    back?: string;
+    pronunciation_file?: string;
+  };
 }) {
-  const [word, setWord] = useState("");
-  const [partOfSpeech, setPartOfSpeech] = useState("");
-  const [back, setBack] = useState("");
-  const [pronunciationFile, setPronunciationFile] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
-  const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
+  // Use initialData to set the initial state
+  const [word, setWord] = useState(initialData?.word || "");
+  const [partOfSpeech, setPartOfSpeech] = useState(initialData?.part_of_speech || "");
+  const [back, setBack] = useState(initialData?.back || "");
+  const [pronunciationFile, setPronunciationFile] = useState(initialData?.pronunciation_file || "");
+  // ... rest of the component state
 
   useEffect(() => {
     onChange({
@@ -95,7 +95,7 @@ export default function WordStandardCardForm({
     setIsReadyToSubmit(
       !!word && !!partOfSpeech && !!back && !!pronunciationFile,
     );
-  }, [word, partOfSpeech, back, pronunciationFile]);
+  }, [word, partOfSpeech, back, pronunciationFile, onChange, setIsReadyToSubmit]);
 
   // ... (audio recording and upload logic)
 
@@ -120,16 +120,11 @@ Create a new React component for the card's exam view under `components/card-exa
 Create a new file `components/card-exams/WordStandardCardExam.tsx`:
 
 ```typescript
-import React, { useState, useEffect } from "react";
-import { View, StyleSheet, TouchableOpacity } from "react-native";
+import React from "react";
+import { View, StyleSheet } from "react-native";
 import { ThemedText } from "@/components/themed-text";
 import { Card, WordStandardCardConfig } from "@/types";
-import { setCardNextLevel } from "@/firebase/card";
-import FeedbackOverlay from "../feedback-overlay";
-import { useAudioPlayer } from "expo-audio";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
-
-// ... (MAPPE_LEVEL_TO_HOURS)
+// ... other imports
 
 interface WordStandardCardExamProps {
   card: Card;
@@ -139,7 +134,6 @@ const WordStandardCardExam: React.FC<WordStandardCardExamProps> = ({
   card,
 }) => {
   const config = card.config as WordStandardCardConfig;
-  const player = useAudioPlayer(config.pronunciation_file);
   // ... (state and handlers for the exam logic)
 
   return (
@@ -154,10 +148,9 @@ const styles = StyleSheet.create({
 });
 
 export default WordStandardCardExam;
-
 ```
 
-## 4. Integrate the New Card Type into the Add Card Screen
+## 4. Integrate into the Add Card Screen
 
 Update `app/(tabs)/add-card.tsx` to include the new card type in the selection dropdown and render the new form component.
 
@@ -181,7 +174,7 @@ Update `app/(tabs)/add-card.tsx` to include the new card type in the selection d
       value={cardType}
     />
     ```
-4.  **Render the new form component**:
+4.  **Render the new form component in `renderCardForm`**:
     ```typescript
     const renderCardForm = () => {
       switch (cardType) {
@@ -199,9 +192,52 @@ Update `app/(tabs)/add-card.tsx` to include the new card type in the selection d
       }
     };
     ```
-    Then call `renderCardForm()` in the return statement.
 
-## 5. Integrate the New Card Type into the Exam Screen
+## 5. Integrate into the Edit Card Screen
+
+Update `app/edit-card.tsx` to render the form for the new card type, pre-filled with the card's data.
+
+In `app/edit-card.tsx`, update the `renderCardForm` function:
+
+```typescript
+const renderCardForm = () => {
+  if (!card) return null;
+
+  switch (card.config.type) {
+    // ... (other cases)
+    case "word-standard":
+      return (
+        <WordStandardCardForm
+          onChange={setCardData}
+          setIsReadyToSubmit={setIsReadyToSubmit}
+          initialData={card.config}
+        />
+      );
+    default:
+      return null;
+  }
+};
+```
+
+## 6. Integrate into the Card List Screen
+
+Update `app/cards.tsx` to display a summary of the new card type's information.
+
+In the `CardItem` component within `app/cards.tsx`, update the `renderCardSpecifics` function:
+
+```typescript
+const renderCardSpecifics = () => {
+  switch (card.config.type) {
+    // ... (other cases)
+    case "word-standard":
+      return <ThemedText>Word: {card.config.word}</ThemedText>;
+    default:
+      return null;
+  }
+};
+```
+
+## 7. Integrate into the Exam Screen
 
 Finally, update `app/exam.tsx` to render the new exam component.
 

@@ -42,15 +42,38 @@ const BoxItem = (box: Box) => {
     }
   }, [box.id]);
 
-  const handleDeleteBox = async () => {
-    if (box.id) {
-      await deleteBoxFromFirebase(box.id);
-    }
+  const handleDeleteBox = () => {
+    Alert.alert(
+      "Delete Box",
+      `Are you sure you want to delete this box? This will also delete ${numberOfCards} card(s).`,
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          onPress: async () => {
+            if (box.id) {
+              await deleteBoxFromFirebase(box.id);
+            }
+          },
+          style: "destructive",
+        },
+      ],
+    );
   };
 
   const goToExam = () => {
     router.push({
       pathname: "/exam",
+      params: { boxId: box.id },
+    });
+  };
+
+  const handleShowCards = () => {
+    router.push({
+      pathname: "/cards",
       params: { boxId: box.id },
     });
   };
@@ -95,6 +118,9 @@ const BoxItem = (box: Box) => {
       <ThemedView style={styles.boxActionContainer}>
         <TouchableOpacity onPress={handleDeleteBox}>
           <FontAwesome name="trash" size={30} color="red" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleShowCards}>
+          <FontAwesome name="list" size={30} color={"#2196F3"} />
         </TouchableOpacity>
         <TouchableOpacity onPress={goToExam}>
           <FontAwesome name="play" size={30} color={"green"} />
@@ -216,7 +242,7 @@ const styles = StyleSheet.create({
     paddingRight: 16,
   },
   boxActionContainer: {
-    minWidth: 70,
+    minWidth: 100,
     justifyContent: "space-between",
     alignItems: "center",
     minHeight: 48,

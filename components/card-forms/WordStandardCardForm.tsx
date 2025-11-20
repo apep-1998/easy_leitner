@@ -13,14 +13,25 @@ import { uploadAudio as uploadAudioToFirebase } from "@/firebase/storage";
 export default function WordStandardCardForm({
   onChange,
   setIsReadyToSubmit,
+  initialData,
 }: {
   onChange: (data: any) => void;
   setIsReadyToSubmit: (isReady: boolean) => void;
+  initialData?: {
+    word?: string;
+    part_of_speech?: string;
+    back?: string;
+    pronunciation_file?: string;
+  };
 }) {
-  const [word, setWord] = useState("");
-  const [partOfSpeech, setPartOfSpeech] = useState("");
-  const [back, setBack] = useState("");
-  const [pronunciationFile, setPronunciationFile] = useState("");
+  const [word, setWord] = useState(initialData?.word || "");
+  const [partOfSpeech, setPartOfSpeech] = useState(
+    initialData?.part_of_speech || "",
+  );
+  const [back, setBack] = useState(initialData?.back || "");
+  const [pronunciationFile, setPronunciationFile] = useState(
+    initialData?.pronunciation_file || "",
+  );
   const [isRecording, setIsRecording] = useState(false);
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
 
@@ -34,7 +45,7 @@ export default function WordStandardCardForm({
     setIsReadyToSubmit(
       !!word && !!partOfSpeech && !!back && !!pronunciationFile,
     );
-  }, [word, partOfSpeech, back, pronunciationFile]);
+  }, [word, partOfSpeech, back, pronunciationFile, onChange, setIsReadyToSubmit]);
 
   async function startRecording() {
     const permission = await requestRecordingPermissionsAsync();

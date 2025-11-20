@@ -6,23 +6,12 @@ import { ThemedTextInput } from "@/components/themed-text-input";
 import { Link, useRouter } from "expo-router";
 import { auth } from "../firebaseConfig";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { useState, useEffect } from "react";
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useState } from "react";
 
 export default function LoginScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const router = useRouter();
-
-  useEffect(() => {
-    const checkUser = async () => {
-      const user = await AsyncStorage.getItem("user");
-      if (user) {
-        router.replace("/(tabs)");
-      }
-    };
-    checkUser();
-  }, []);
 
   const onLoginPress = () => {
     if (email === "" || password === "") {
@@ -30,10 +19,7 @@ export default function LoginScreen() {
       return;
     }
     signInWithEmailAndPassword(auth, email, password)
-      .then(async (userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        await AsyncStorage.setItem("user", JSON.stringify(user));
+      .then(() => {
         router.replace("/(tabs)");
       })
       .catch((error) => {

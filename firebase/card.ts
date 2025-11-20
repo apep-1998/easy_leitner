@@ -7,11 +7,35 @@ import {
   doc,
   where,
   Timestamp,
+  deleteDoc,
+  getDoc,
 } from "firebase/firestore";
 import { db, auth } from "@/firebaseConfig";
 import { Card, CardConfig } from "@/types";
 
 const CARDS_COLLECTION = "cards";
+
+export const getCard = async (cardId: string) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("User not authenticated");
+
+  const docRef = doc(db, CARDS_COLLECTION, cardId);
+  const docSnap = await getDoc(docRef);
+
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    return {
+      ...data,
+      id: docSnap.id,
+      // Convert Firestore Timestamps to JS Dates
+      nextReviewTime: (data.nextReviewTime as Timestamp).toDate(),
+      createdAt: (data.createdAt as Timestamp).toDate(),
+      updatedAt: (data.updatedAt as Timestamp).toDate(),
+    } as Card;
+  } else {
+    throw new Error("No such document!");
+  }
+};
 
 export const addCard = async (
   boxId: string,
@@ -34,6 +58,26 @@ export const addCard = async (
     createdAt: new Date(),
     updatedAt: new Date(),
   });
+};
+
+export const updateCard = async (
+  cardId: string,
+  cardData: Partial<CardConfig>,
+) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("User not authenticated");
+
+  await updateDoc(doc(db, CARDS_COLLECTION, cardId), {
+    config: cardData,
+    updatedAt: new Date(),
+  });
+};
+
+export const deleteCard = async (cardId: string) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("User not authenticated");
+
+  await deleteDoc(doc(db, CARDS_COLLECTION, cardId));
 };
 
 export const onReadyCardsSnapshot = (

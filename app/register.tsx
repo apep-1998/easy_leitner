@@ -22,8 +22,6 @@ export default function RegisterScreen() {
       .then((userCredential) => {
         // Signed up
         const user = userCredential.user;
-        console.log(user);
-        Alert.alert("Success", "User registered successfully");
       })
       .catch((error) => {
         const errorMessage = error.message;

@@ -13,12 +13,19 @@ import { uploadAudio as uploadAudioToFirebase } from "@/firebase/storage";
 export default function SpellingCardForm({
   onChange,
   setIsReadyToSubmit,
+  initialData,
 }: {
   onChange: (data: any) => void;
   setIsReadyToSubmit: (isReady: boolean) => void;
+  initialData?: {
+    spelling?: string;
+    voice_file_url?: string;
+  };
 }) {
-  const [spelling, setSpelling] = useState("");
-  const [voice_file_url, setVoiceFileUrl] = useState("");
+  const [spelling, setSpelling] = useState(initialData?.spelling || "");
+  const [voice_file_url, setVoiceFileUrl] = useState(
+    initialData?.voice_file_url || "",
+  );
   const [isRecording, setIsRecording] = useState(false);
   const recorder = useAudioRecorder(RecordingPresets.HIGH_QUALITY);
 
