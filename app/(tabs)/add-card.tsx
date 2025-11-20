@@ -7,12 +7,13 @@ import { ThemedView } from "@/components/themed-view";
 import StandardCardForm from "@/components/card-forms/StandardCardForm";
 import SpellingCardForm from "@/components/card-forms/SpellingCardForm";
 import WordStandardCardForm from "@/components/card-forms/WordStandardCardForm";
+import GermanVerbConjugatorCardForm from "@/components/card-forms/GermanVerbConjugatorCardForm";
 import { Box } from "@/types";
 import { ThemedPicker } from "@/components/themed-picker";
 import { onBoxesSnapshot } from "@/firebase/box";
 import { addCard as addCardToFirebase } from "@/firebase/card";
 
-type CardType = "standard" | "spelling" | "word-standard";
+type CardType = "standard" | "spelling" | "word-standard" | "german-verb-conjugator";
 
 export default function AddCardScreen() {
   const [cardType, setCardType] = useState<CardType>("standard");
@@ -74,6 +75,14 @@ export default function AddCardScreen() {
             setIsReadyToSubmit={setIsReadyToSubmit}
           />
         );
+      case "german-verb-conjugator":
+        return (
+          <GermanVerbConjugatorCardForm
+            key={formKey}
+            onChange={setCardData}
+            setIsReadyToSubmit={setIsReadyToSubmit}
+          />
+        );
       default:
         return null;
     }
@@ -90,6 +99,7 @@ export default function AddCardScreen() {
             { label: "Standard", value: "standard" },
             { label: "Spelling", value: "spelling" },
             { label: "Word Standard", value: "word-standard" },
+            { label: "German Verb Conjugator", value: "german-verb-conjugator" },
           ]}
           value={cardType}
         />

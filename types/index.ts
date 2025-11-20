@@ -20,10 +20,23 @@ export const WordStandardCardConfigSchema = z.object({
   back: z.string(),
 });
 
+export const GermanVerbConjugatorCardConfigSchema = z.object({
+  type: z.literal("german-verb-conjugator"),
+  verb: z.string(),
+  pronunciation_file_url: z.string().url().nullable(),
+  ich: z.string(),
+  du: z.string(),
+  "er/sie/es": z.string(),
+  wir: z.string(),
+  ihr: z.string(),
+  sie: z.string(),
+});
+
 export const CardConfigSchema = z.union([
   StandardCardConfigSchema,
   SpellingCardConfigSchema,
   WordStandardCardConfigSchema,
+  GermanVerbConjugatorCardConfigSchema,
 ]);
 
 export const BoxSchema = z.object({
@@ -40,6 +53,7 @@ export const CardSchema = z.object({
     StandardCardConfigSchema,
     SpellingCardConfigSchema,
     WordStandardCardConfigSchema,
+    GermanVerbConjugatorCardConfigSchema,
   ]),
   boxId: z.string(),
   userId: z.string(),
@@ -57,4 +71,7 @@ export type SpellingCardConfig = z.infer<typeof SpellingCardConfigSchema>;
 export type StandardCardConfig = z.infer<typeof StandardCardConfigSchema>;
 export type WordStandardCardConfig = z.infer<
   typeof WordStandardCardConfigSchema
+>;
+export type GermanVerbConjugatorCardConfig = z.infer<
+  typeof GermanVerbConjugatorCardConfigSchema
 >;

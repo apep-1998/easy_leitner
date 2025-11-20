@@ -26,6 +26,8 @@ const CardItem = ({ card }: { card: Card }) => {
         return <ThemedText>Front: {card.config.front}</ThemedText>;
       case "word-standard":
         return <ThemedText>Word: {card.config.word}</ThemedText>;
+      case "german-verb-conjugator":
+        return <ThemedText>Verb: {card.config.verb}</ThemedText>;
       default:
         return null;
     }
