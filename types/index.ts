@@ -32,11 +32,21 @@ export const GermanVerbConjugatorCardConfigSchema = z.object({
   sie: z.string(),
 });
 
+export const MultipleChoiceCardConfigSchema = z.object({
+  type: z.literal("multiple-choice"),
+  question: z.string(),
+  voice_file_url: z.string().url().nullable(),
+  image_url: z.string().url().nullable(),
+  answer: z.string(),
+  options: z.array(z.string()),
+});
+
 export const CardConfigSchema = z.union([
   StandardCardConfigSchema,
   SpellingCardConfigSchema,
   WordStandardCardConfigSchema,
   GermanVerbConjugatorCardConfigSchema,
+  MultipleChoiceCardConfigSchema,
 ]);
 
 export const BoxSchema = z.object({
@@ -54,6 +64,7 @@ export const CardSchema = z.object({
     SpellingCardConfigSchema,
     WordStandardCardConfigSchema,
     GermanVerbConjugatorCardConfigSchema,
+    MultipleChoiceCardConfigSchema,
   ]),
   boxId: z.string(),
   userId: z.string(),
@@ -74,4 +85,7 @@ export type WordStandardCardConfig = z.infer<
 >;
 export type GermanVerbConjugatorCardConfig = z.infer<
   typeof GermanVerbConjugatorCardConfigSchema
+>;
+export type MultipleChoiceCardConfig = z.infer<
+  typeof MultipleChoiceCardConfigSchema
 >;

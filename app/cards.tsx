@@ -28,6 +28,8 @@ const CardItem = ({ card }: { card: Card }) => {
         return <ThemedText>Word: {card.config.word}</ThemedText>;
       case "german-verb-conjugator":
         return <ThemedText>Verb: {card.config.verb}</ThemedText>;
+      case "multiple-choice":
+        return <ThemedText>Question: {card.config.question}</ThemedText>;
       default:
         return null;
     }

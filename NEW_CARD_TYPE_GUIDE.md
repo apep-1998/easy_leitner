@@ -8,17 +8,18 @@ First, you need to define the new card type in `types/index.ts`. This involves c
 
 **Example:**
 
-Let's say we want to add a `WordStandard` card type.
+Let's say we want to add a `MultipleChoice` card type.
 
 In `types/index.ts`, add the following:
 
 ```typescript
-export const WordStandardCardConfigSchema = z.object({
-  type: z.literal("word-standard"),
-  word: z.string(),
-  part_of_speech: z.string(),
-  pronunciation_file: z.string().url(),
-  back: z.string(),
+export const MultipleChoiceCardConfigSchema = z.object({
+  type: z.literal("multiple-choice"),
+  question: z.string(),
+  voice_file_url: z.string().url().nullable(),
+  image_url: z.string().url().nullable(),
+  answer: z.string(),
+  options: z.array(z.string()),
 });
 ```
 
@@ -26,17 +27,15 @@ Then, add the new schema to the `CardConfigSchema` and `CardSchema` unions:
 
 ```typescript
 export const CardConfigSchema = z.union([
-  StandardCardConfigSchema,
-  SpellingCardConfigSchema,
-  WordStandardCardConfigSchema, // Add this
+  // ... other schemas
+  MultipleChoiceCardConfigSchema, // Add this
 ]);
 
 export const CardSchema = z.object({
   // ...
   config: z.union([
-    StandardCardConfigSchema,
-    SpellingCardConfigSchema,
-    WordStandardCardConfigSchema, // Add this
+    // ... other schemas
+    MultipleChoiceCardConfigSchema, // Add this
   ]),
   // ...
 });
@@ -45,8 +44,8 @@ export const CardSchema = z.object({
 Finally, export the new type:
 
 ```typescript
-export type WordStandardCardConfig = z.infer<
-  typeof WordStandardCardConfigSchema
+export type MultipleChoiceCardConfig = z.infer<
+  typeof MultipleChoiceCardConfigSchema
 >;
 ```
 
@@ -56,52 +55,55 @@ Next, create a new React component for the card's creation and editing form unde
 
 **Example:**
 
-Create a new file `components/card-forms/WordStandardCardForm.tsx`:
+Create a new file `components/card-forms/MultipleChoiceCardForm.tsx`:
 
 ```typescript
 import { ThemedText } from "@/components/themed-text";
 import { ThemedTextInput } from "@/components/themed-text-input";
 // ... other imports
 
-export default function WordStandardCardForm({
+export default function MultipleChoiceCardForm({
   onChange,
   setIsReadyToSubmit,
   initialData, // For editing
 }: {
   onChange: (data: any) => void;
   setIsReadyToSubmit: (isReady: boolean) => void;
-  // Add initialData to the props
-  initialData?: {
-    word?: string;
-    part_of_speech?: string;
-    back?: string;
-    pronunciation_file?: string;
-  };
+  initialData?: Partial<MultipleChoiceCardConfig>;
 }) {
-  // Use initialData to set the initial state
-  const [word, setWord] = useState(initialData?.word || "");
-  const [partOfSpeech, setPartOfSpeech] = useState(initialData?.part_of_speech || "");
-  const [back, setBack] = useState(initialData?.back || "");
-  const [pronunciationFile, setPronunciationFile] = useState(initialData?.pronunciation_file || "");
-  // ... rest of the component state
+  const [question, setQuestion] = useState(initialData?.question || "");
+  const [answer, setAnswer] = useState(initialData?.answer || "");
+  const [options, setOptions] = useState<string[]>(initialData?.options || ["", ""]);
+  // ... other state for image and voice files
 
   useEffect(() => {
-    onChange({
-      word,
-      part_of_speech: partOfSpeech,
-      back,
-      pronunciation_file: pronunciationFile,
-    });
-    setIsReadyToSubmit(
-      !!word && !!partOfSpeech && !!back && !!pronunciationFile,
-    );
-  }, [word, partOfSpeech, back, pronunciationFile, onChange, setIsReadyToSubmit]);
+    // Trim and validate inputs
+    const trimmedQuestion = question.trim();
+    const trimmedOptions = options.map(opt => opt.trim());
+    const trimmedAnswer = answer.trim();
 
-  // ... (audio recording and upload logic)
+    onChange({
+      question: trimmedQuestion,
+      answer: trimmedAnswer,
+      options: trimmedOptions,
+      // ... other fields
+    });
+    
+    // Logic to enable/disable the save button
+    setIsReadyToSubmit(
+      !!trimmedQuestion &&
+      !!trimmedAnswer &&
+      trimmedOptions.length > 1 &&
+      trimmedOptions.every((opt) => !!opt) &&
+      trimmedOptions.includes(trimmedAnswer)
+    );
+  }, [question, answer, options, onChange, setIsReadyToSubmit]);
+
+  // ... (logic for adding/removing options, file uploads, etc.)
 
   return (
     <ThemedView>
-      // ... (form inputs)
+      // ... (form inputs for question, options, answer picker, etc.)
     </ThemedView>
   );
 }
@@ -113,32 +115,32 @@ const styles = StyleSheet.create({
 
 ## 3. Create a New Exam Component
 
-Create a new React component for the card's exam view under `components/card-exams/`. This component will display the card during a review session.
+Create a new React component for the card's exam view under `components/card-exams/`. This component will display the card during a review session and handle its own state for answer checking and updating the card's level in Firebase.
 
 **Example:**
 
-Create a new file `components/card-exams/WordStandardCardExam.tsx`:
+Create a new file `components/card-exams/MultipleChoiceCardExam.tsx`:
 
 ```typescript
 import React from "react";
 import { View, StyleSheet } from "react-native";
 import { ThemedText } from "@/components/themed-text";
-import { Card, WordStandardCardConfig } from "@/types";
+import { Card, MultipleChoiceCardConfig } from "@/types";
 // ... other imports
 
-interface WordStandardCardExamProps {
+interface MultipleChoiceCardExamProps {
   card: Card;
 }
 
-const WordStandardCardExam: React.FC<WordStandardCardExamProps> = ({
+const MultipleChoiceCardExam: React.FC<MultipleChoiceCardExamProps> = ({
   card,
 }) => {
-  const config = card.config as WordStandardCardConfig;
-  // ... (state and handlers for the exam logic)
+  const config = card.config as MultipleChoiceCardConfig;
+  // ... (state and handlers for the exam logic, answer checking, etc.)
 
   return (
     <View style={styles.container}>
-      // ... (exam view JSX)
+      // ... (exam view JSX for question, image, and shuffled options)
     </View>
   );
 };
@@ -147,7 +149,7 @@ const styles = StyleSheet.create({
   // ... (styles)
 });
 
-export default WordStandardCardExam;
+export default MultipleChoiceCardExam;
 ```
 
 ## 4. Integrate into the Add Card Screen
@@ -156,11 +158,11 @@ Update `app/(tabs)/add-card.tsx` to include the new card type in the selection d
 
 1.  **Update `CardType`**:
     ```typescript
-    type CardType = "standard" | "spelling" | "word-standard";
+    type CardType = "standard" | "spelling" | "multiple-choice";
     ```
 2.  **Import the new form component**:
     ```typescript
-    import WordStandardCardForm from "@/components/card-forms/WordStandardCardForm";
+    import MultipleChoiceCardForm from "@/components/card-forms/MultipleChoiceCardForm";
     ```
 3.  **Add the new card type to the `ThemedPicker`**:
     ```typescript
@@ -169,7 +171,7 @@ Update `app/(tabs)/add-card.tsx` to include the new card type in the selection d
       items={[
         { label: "Standard", value: "standard" },
         { label: "Spelling", value: "spelling" },
-        { label: "Word Standard", value: "word-standard" },
+        { label: "Multiple Choice", value: "multiple-choice" },
       ]}
       value={cardType}
     />
@@ -179,9 +181,9 @@ Update `app/(tabs)/add-card.tsx` to include the new card type in the selection d
     const renderCardForm = () => {
       switch (cardType) {
         // ... (other cases)
-        case "word-standard":
+        case "multiple-choice":
           return (
-            <WordStandardCardForm
+            <MultipleChoiceCardForm
               key={formKey}
               onChange={setCardData}
               setIsReadyToSubmit={setIsReadyToSubmit}
@@ -205,9 +207,9 @@ const renderCardForm = () => {
 
   switch (card.config.type) {
     // ... (other cases)
-    case "word-standard":
+    case "multiple-choice":
       return (
-        <WordStandardCardForm
+        <MultipleChoiceCardForm
           onChange={setCardData}
           setIsReadyToSubmit={setIsReadyToSubmit}
           initialData={card.config}
@@ -229,8 +231,8 @@ In the `CardItem` component within `app/cards.tsx`, update the `renderCardSpecif
 const renderCardSpecifics = () => {
   switch (card.config.type) {
     // ... (other cases)
-    case "word-standard":
-      return <ThemedText>Word: {card.config.word}</ThemedText>;
+    case "multiple-choice":
+      return <ThemedText>Question: {card.config.question}</ThemedText>;
     default:
       return null;
   }
@@ -243,11 +245,53 @@ Finally, update `app/exam.tsx` to render the new exam component.
 
 1.  **Import the new exam component**:
     ```typescript
-    import WordStandardCardExam from "@/components/card-exams/WordStandardCardExam";
+    import MultipleChoiceCardExam from "@/components/card-exams/MultipleChoiceCardExam";
     ```
 2.  **Add a new condition to render the component**:
     ```typescript
-    {currentCard?.config.type === "word-standard" && (
-      <WordStandardCardExam card={currentCard} />
+    {currentCard?.config.type === "multiple-choice" && (
+      <MultipleChoiceCardExam card={currentCard} />
     )}
     ```
+
+## 8. Update Import/Export Functions
+
+To ensure the new card type is compatible with the box import/export feature, you must update the cloud functions.
+
+1.  **Update `functions/src/box/export.ts`**:
+    *   Add your new card config type to the `CardConfig` type union.
+    *   If your card includes new fields that store file URLs (like `image_url` or `voice_file_url`), add these field names to the `knownFileFields` array. This ensures the files are downloaded and included in the exported `.zip` archive.
+
+    ```typescript
+    type CardConfig =
+      | {
+          // ... other types
+        }
+      | {
+          type: "multiple-choice";
+          question: string;
+          voice_file_url: string | null;
+          image_url: string | null;
+          answer: string;
+          options: string[];
+        };
+    
+    // ...
+
+    const processedCards = await Promise.all(
+        cards.map(async (card) => {
+            const newConfig = { ...card.config };
+            const knownFileFields = [
+                "voice_file_url",
+                "pronunciation_file",
+                "pronunciation_file_url",
+                "image_url", // Add new file fields here
+            ];
+            // ...
+        })
+    );
+    ```
+
+2.  **Verify `functions/src/box/import.ts`**:
+    *   The import function is designed to be generic. As long as your file URLs in the exported `cards.json` are prefixed with `@data/`, the `processCardConfig` function should automatically handle uploading them to storage and replacing the path with the new URL. No changes are typically needed, but it's good practice to verify this behavior.
+

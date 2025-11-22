@@ -6,6 +6,7 @@ import StandardCardExam from "@/components/card-exams/StandardCardExam";
 import WordStandardCardExam from "@/components/card-exams/WordStandardCardExam";
 import SpellingCardExam from "@/components/card-exams/SpellingCardExam";
 import GermanVerbConjugatorCardExam from "@/components/card-exams/GermanVerbConjugatorCardExam";
+import MultipleChoiceCardExam from "@/components/card-exams/MultipleChoiceCardExam";
 import { ThemedText } from "@/components/themed-text";
 import { ThemedView } from "@/components/themed-view";
 import { onReadyCardsSnapshot } from "@/firebase/card";
@@ -54,6 +55,9 @@ const ExamScreen = () => {
       )}
       {currentCard?.config.type === "german-verb-conjugator" && (
         <GermanVerbConjugatorCardExam card={currentCard} />
+      )}
+      {currentCard?.config.type === "multiple-choice" && (
+        <MultipleChoiceCardExam card={currentCard} />
       )}
     </SafeScrollView>
   );

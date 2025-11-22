@@ -8,6 +8,7 @@ import StandardCardForm from "@/components/card-forms/StandardCardForm";
 import SpellingCardForm from "@/components/card-forms/SpellingCardForm";
 import WordStandardCardForm from "@/components/card-forms/WordStandardCardForm";
 import GermanVerbConjugatorCardForm from "@/components/card-forms/GermanVerbConjugatorCardForm";
+import MultipleChoiceCardForm from "@/components/card-forms/MultipleChoiceCardForm";
 import { Box, Card } from "@/types";
 import { getBox } from "@/firebase/box";
 import { getCard, updateCard } from "@/firebase/card";
@@ -79,6 +80,14 @@ export default function EditCardScreen() {
       case "german-verb-conjugator":
         return (
           <GermanVerbConjugatorCardForm
+            onChange={setCardData}
+            setIsReadyToSubmit={setIsReadyToSubmit}
+            initialData={card.config}
+          />
+        );
+      case "multiple-choice":
+        return (
+          <MultipleChoiceCardForm
             onChange={setCardData}
             setIsReadyToSubmit={setIsReadyToSubmit}
             initialData={card.config}

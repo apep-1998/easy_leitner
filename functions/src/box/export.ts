@@ -54,6 +54,14 @@ type CardConfig =
       wir: string;
       ihr: string;
       sie: string;
+    }
+  | {
+      type: "multiple-choice";
+      question: string;
+      voice_file_url: string | null;
+      image_url: string | null;
+      answer: string;
+      options: string[];
     };
 
 interface CardData {
@@ -114,6 +122,7 @@ export const exportBox = onCall(async (request) => {
                     "voice_file_url",
                     "pronunciation_file",
                     "pronunciation_file_url",
+                    "image_url",
                 ];
 
                 for (const field of knownFileFields) {

@@ -8,6 +8,7 @@ import StandardCardForm from "@/components/card-forms/StandardCardForm";
 import SpellingCardForm from "@/components/card-forms/SpellingCardForm";
 import WordStandardCardForm from "@/components/card-forms/WordStandardCardForm";
 import GermanVerbConjugatorCardForm from "@/components/card-forms/GermanVerbConjugatorCardForm";
+import MultipleChoiceCardForm from "@/components/card-forms/MultipleChoiceCardForm";
 import { Box } from "@/types";
 import { ThemedPicker } from "@/components/themed-picker";
 import { onBoxesSnapshot } from "@/firebase/box";
@@ -17,7 +18,8 @@ type CardType =
   | "standard"
   | "spelling"
   | "word-standard"
-  | "german-verb-conjugator";
+  | "german-verb-conjugator"
+  | "multiple-choice";
 
 export default function AddCardScreen() {
   const [cardType, setCardType] = useState<CardType>("standard");
@@ -87,6 +89,14 @@ export default function AddCardScreen() {
             setIsReadyToSubmit={setIsReadyToSubmit}
           />
         );
+      case "multiple-choice":
+        return (
+          <MultipleChoiceCardForm
+            key={formKey}
+            onChange={setCardData}
+            setIsReadyToSubmit={setIsReadyToSubmit}
+          />
+        );
       default:
         return null;
     }
@@ -109,6 +119,7 @@ export default function AddCardScreen() {
               label: "German Verb Conjugator",
               value: "german-verb-conjugator",
             },
+            { label: "Multiple Choice", value: "multiple-choice" },
           ]}
           value={cardType}
         />
