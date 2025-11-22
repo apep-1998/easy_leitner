@@ -36,3 +36,5 @@ export const helloWorld = onRequest((request, response) => {
 
 export { exportBox } from "./box/export";
 export { importBox } from "./box/import";
+export { onBoxUpdate } from "./box/settings";
+

@@ -9,6 +9,7 @@ import {
   getDoc,
   getDocs,
   writeBatch,
+  updateDoc,
 } from "firebase/firestore";
 import { db, auth } from "@/firebaseConfig";
 import { Box } from "@/types";
@@ -57,7 +58,18 @@ export const addBox = async (boxName: string) => {
   return await addDoc(collection(db, BOXES_COLLECTION), {
     name: boxName,
     userId: user.uid,
+    dailyNewCardLimit: 0,
     createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+};
+
+export const updateBox = async (boxId: string, boxData: Partial<Box>) => {
+  const user = auth.currentUser;
+  if (!user) throw new Error("User not authenticated");
+
+  await updateDoc(doc(db, BOXES_COLLECTION, boxId), {
+    ...boxData,
     updatedAt: new Date(),
   });
 };

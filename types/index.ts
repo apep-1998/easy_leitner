@@ -53,6 +53,7 @@ export const BoxSchema = z.object({
   id: z.string().optional(),
   name: z.string().max(200),
   userId: z.string(),
+  dailyNewCardLimit: z.number().optional().default(0),
   createdAt: z.date().default(() => new Date()),
   updatedAt: z.date().default(() => new Date()),
 });

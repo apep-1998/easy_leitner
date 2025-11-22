@@ -9,6 +9,7 @@ import {
   Timestamp,
   deleteDoc,
   getDoc,
+  orderBy,
 } from "firebase/firestore";
 import { db, auth } from "@/firebaseConfig";
 import { Card, CardConfig } from "@/types";
@@ -92,6 +93,7 @@ export const onReadyCardsSnapshot = (
     where("userId", "==", user.uid),
     where("boxId", "==", boxId),
     where("nextReviewTime", "<=", new Date()),
+    orderBy("nextReviewTime"),
   );
 
   const unsubscribe = onSnapshot(q, (querySnapshot) => {

@@ -25,6 +25,7 @@ import {
   addBox as addBoxToFirebase,
   deleteBox as deleteBoxFromFirebase,
   onCardsSnapshotInBox,
+  updateBox,
 } from "@/firebase/box";
 import { exportBox } from "@/firebase/functions";
 
@@ -35,6 +36,10 @@ const BoxItem = (box: Box) => {
   const [numberOfReadyCards, setNumberOfReadyCards] = useState(0);
   const [numberOfCards, setNumberOfCards] = useState(0);
   const [isExporting, setIsExporting] = useState(false);
+  const [isSettingsModalVisible, setSettingsModalVisible] = useState(false);
+  const [dailyNewCardLimit, setDailyNewCardLimit] = useState(
+    box.dailyNewCardLimit?.toString() || "0",
+  );
 
   useEffect(() => {
     if (box.id) {
@@ -103,8 +108,80 @@ const BoxItem = (box: Box) => {
     }
   };
 
+  const handleSaveSettings = async () => {
+    if (!box.id) return;
+
+    const limit = parseInt(dailyNewCardLimit, 10);
+    if (isNaN(limit)) {
+      Alert.alert("Error", "Please enter a valid number");
+      return;
+    }
+
+    try {
+      await updateBox(box.id, { dailyNewCardLimit: limit });
+      setSettingsModalVisible(false);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to save settings.");
+    }
+  };
+
   return (
     <ThemedView style={styles.boxContainer}>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isSettingsModalVisible}
+        onRequestClose={() => {
+          setSettingsModalVisible(!isSettingsModalVisible);
+        }}
+      >
+        <ThemedView style={styles.centeredView}>
+          <ThemedView style={styles.modalView}>
+            <ThemedText style={styles.modalText}>Box Settings</ThemedText>
+            <ThemedTextInput
+              placeholder="Daily New Card Limit"
+              style={{
+                width: "90%",
+                height: 40,
+                borderColor: "gray",
+                borderWidth: 1,
+                marginBottom: 12,
+                paddingLeft: 8,
+              }}
+              onChangeText={setDailyNewCardLimit}
+              value={dailyNewCardLimit}
+              keyboardType="numeric"
+            />
+            <ThemedView
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "80%",
+              }}
+            >
+              <TouchableOpacity
+                style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                onPress={handleSaveSettings}
+              >
+                <ThemedText style={styles.textStyle}>Save</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  ...styles.openButton,
+                  backgroundColor: "red",
+                }}
+                onPress={() => {
+                  setSettingsModalVisible(false);
+                }}
+              >
+                <ThemedText style={styles.textStyle}>Cancel</ThemedText>
+              </TouchableOpacity>
+            </ThemedView>
+          </ThemedView>
+        </ThemedView>
+      </Modal>
       <ThemedView
         style={{
           flexDirection: "column",
@@ -154,6 +231,9 @@ const BoxItem = (box: Box) => {
       <ThemedView style={styles.boxActionContainer}>
         <TouchableOpacity onPress={handleDeleteBox}>
           <FontAwesome name="trash" size={35} color="red" />
+        </TouchableOpacity>
+        <TouchableOpacity onPress={() => setSettingsModalVisible(true)}>
+          <FontAwesome name="cog" size={35} color="#2196F3" />
         </TouchableOpacity>
         <TouchableOpacity onPress={handleExportBox} disabled={isExporting}>
           {isExporting ? (
