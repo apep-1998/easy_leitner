@@ -1,0 +1,41 @@
+{
+  "version": "1.0.0",
+  "cards": [
+    {
+      "config": {
+        "type": "standard",
+        "front": "Hello",
+        "back": "World"
+      }
+    },
+    {
+      "config": {
+        "type": "spelling",
+        "voice_file_url": "@data/moon.mp3",
+        "spelling": "moon"
+      }
+    },
+    {
+      "config": {
+        "type": "word-standard",
+        "word": "Sun",
+        "part_of_speech": "Noun",
+        "pronunciation_file": "https://dictionary.cambridge.org/media/english/us_pron/s/son/son__/son.mp3",
+        "back": "The star at the center of the Solar System."
+      }
+    },
+    {
+      "config": {
+        "type": "german-verb-conjugator",
+        "verb": "gehen",
+        "pronunciation_file_url": "@data/gehen.mp3",
+        "ich": "gehe",
+        "du": "gehst",
+        "er/sie/es": "geht",
+        "wir": "gehen",
+        "ihr": "geht",
+        "sie": "gehen"
+      }
+    }
+  ]
+}

@@ -4,9 +4,15 @@ import {
   Modal,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
+import * as FileSystem from "expo-file-system/legacy";
+import * as Sharing from "expo-sharing";
+import * as DocumentPicker from "expo-document-picker";
+import { auth } from "@/firebaseConfig";
+import { importBox } from "@/firebase/functions";
 
 import { SafeAreaView, SafeAreaProvider } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/themed-text";
@@ -20,6 +26,7 @@ import {
   deleteBox as deleteBoxFromFirebase,
   onCardsSnapshotInBox,
 } from "@/firebase/box";
+import { exportBox } from "@/firebase/functions";
 
 import { Box } from "@/types";
 
@@ -27,6 +34,7 @@ const BoxItem = (box: Box) => {
   const router = useRouter();
   const [numberOfReadyCards, setNumberOfReadyCards] = useState(0);
   const [numberOfCards, setNumberOfCards] = useState(0);
+  const [isExporting, setIsExporting] = useState(false);
 
   useEffect(() => {
     if (box.id) {
@@ -75,6 +83,24 @@ const BoxItem = (box: Box) => {
       pathname: "/cards",
       params: { boxId: box.id },
     });
+  };
+
+  const handleExportBox = async () => {
+    if (!box.id) return;
+    setIsExporting(true);
+    try {
+      const result: any = await exportBox({ boxId: box.id });
+      const { downloadUrl } = result.data;
+
+      const localUri = FileSystem.documentDirectory + `${box.name}.zip`;
+      const { uri } = await FileSystem.downloadAsync(downloadUrl, localUri);
+      await Sharing.shareAsync(uri);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to export box.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -129,6 +155,13 @@ const BoxItem = (box: Box) => {
         <TouchableOpacity onPress={handleDeleteBox}>
           <FontAwesome name="trash" size={35} color="red" />
         </TouchableOpacity>
+        <TouchableOpacity onPress={handleExportBox} disabled={isExporting}>
+          {isExporting ? (
+            <ActivityIndicator size="small" color="#2196F3" />
+          ) : (
+            <MaterialCommunityIcons name="export" size={35} color="#2196F3" />
+          )}
+        </TouchableOpacity>
         <TouchableOpacity onPress={handleShowCards}>
           <FontAwesome name="list" size={35} color={"#2196F3"} />
         </TouchableOpacity>
@@ -144,6 +177,11 @@ export default function HomeScreen() {
   const [boxes, setBoxes] = useState<Box[]>([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [newBoxName, setNewBoxName] = useState("");
+  const [isImporting, setIsImporting] = useState(false);
+  const [isImportModalVisible, setImportModalVisible] = useState(false);
+  const [importBoxName, setImportBoxName] = useState("");
+  const [selectedFile, setSelectedFile] =
+    useState<DocumentPicker.DocumentPickerResult | null>(null);
 
   useEffect(() => {
     const unsubscribe = onBoxesSnapshot(setBoxes);
@@ -164,9 +202,135 @@ export default function HomeScreen() {
     }
   };
 
+  const handleFilePick = async () => {
+    try {
+      const res = await DocumentPicker.getDocumentAsync({
+        type: "application/zip",
+        copyToCacheDirectory: true,
+      });
+
+      if (res.canceled) {
+        return;
+      }
+      setSelectedFile(res);
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to select file.");
+    }
+  };
+
+  const handleImport = async () => {
+    if (!importBoxName.trim()) {
+      Alert.alert("Error", "Please enter a name for the box.");
+      return;
+    }
+    if (!selectedFile) {
+      Alert.alert("Error", "Please select a file to import.");
+      return;
+    }
+
+    if (selectedFile.canceled) {
+      return;
+    }
+
+    setIsImporting(true);
+    try {
+      const userId = auth.currentUser?.uid;
+      if (!userId) {
+        throw new Error("User not authenticated");
+      }
+      console.log("Importing box...");
+      console.log(selectedFile, userId, importBoxName);
+      await importBox(selectedFile.assets[0].uri, importBoxName, userId);
+      Alert.alert("Success", "Box imported successfully");
+    } catch (error) {
+      console.error(error);
+      Alert.alert("Error", "Failed to import box.");
+    } finally {
+      setIsImporting(false);
+      setImportModalVisible(false);
+      setImportBoxName("");
+      setSelectedFile(null);
+    }
+  };
+
   return (
     <SafeAreaProvider>
       <SafeAreaView style={{ flex: 1 }}>
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={isImportModalVisible}
+          onRequestClose={() => {
+            setImportModalVisible(!isImportModalVisible);
+          }}
+        >
+          <ThemedView style={styles.centeredView}>
+            <ThemedView style={styles.modalView}>
+              <ThemedText style={styles.modalText}>Import Box</ThemedText>
+              <ThemedTextInput
+                placeholder="New Box Name"
+                style={{
+                  width: "90%",
+                  height: 40,
+                  borderColor: "gray",
+                  borderWidth: 1,
+                  marginBottom: 12,
+                  paddingLeft: 8,
+                }}
+                onChangeText={setImportBoxName}
+                value={importBoxName}
+                autoCapitalize="none"
+              />
+              <TouchableOpacity
+                style={{
+                  ...styles.openButton,
+                  backgroundColor: "#4CAF50",
+                  marginTop: 10,
+                }}
+                onPress={handleFilePick}
+              >
+                <ThemedText style={styles.textStyle}>
+                  {selectedFile && !selectedFile.canceled
+                    ? selectedFile.assets[0].name
+                    : "Select File"}
+                </ThemedText>
+              </TouchableOpacity>
+              <ThemedView
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  width: "80%",
+                  marginTop: 20,
+                }}
+              >
+                <TouchableOpacity
+                  style={{ ...styles.openButton, backgroundColor: "#2196F3" }}
+                  onPress={handleImport}
+                  disabled={isImporting}
+                >
+                  {isImporting ? (
+                    <ActivityIndicator color="white" />
+                  ) : (
+                    <ThemedText style={styles.textStyle}>Import</ThemedText>
+                  )}
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={{
+                    ...styles.openButton,
+                    backgroundColor: "red",
+                  }}
+                  onPress={() => {
+                    setImportModalVisible(false);
+                  }}
+                >
+                  <ThemedText style={styles.textStyle}>Cancel</ThemedText>
+                </TouchableOpacity>
+              </ThemedView>
+            </ThemedView>
+          </ThemedView>
+        </Modal>
         <Modal
           animationType="slide"
           transparent={true}
@@ -232,6 +396,17 @@ export default function HomeScreen() {
         >
           <FontAwesome name="plus" size={30} color="white" />
         </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.fabImport}
+          onPress={() => setImportModalVisible(true)}
+          disabled={isImporting}
+        >
+          {isImporting ? (
+            <ActivityIndicator size="small" color="white" />
+          ) : (
+            <MaterialCommunityIcons name="import" size={30} color="white" />
+          )}
+        </TouchableOpacity>
       </SafeAreaView>
     </SafeAreaProvider>
   );
@@ -266,6 +441,19 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     width: 60,
     height: 60,
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 8,
+  },
+  fabImport: {
+    position: "absolute",
+    margin: 16,
+    right: 0,
+    bottom: 80, // Position it above the add button
+    backgroundColor: "#4CAF50", // Different color
+    borderRadius: 25,
+    width: 50,
+    height: 50,
     justifyContent: "center",
     alignItems: "center",
     elevation: 8,
